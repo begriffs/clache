@@ -13,10 +13,15 @@ if(!$t) {
 ?>URL is not a well-formed combinatory logic term<?php
 	die();
 }
-$u = cl_fr($db, cl_parse($_GET['cl']), 50, 1);
-$out = cl_serialize($u);
-header('X-Reduction-Steps: ' . cl_distance($db, $t, $u));
-header('X-Normal: ' . cl_normal($db, $u));
-echo $out;
+$u = cl_fr($db, cl_parse($_GET['cl']), 1000);
+$normal = cl_normal($db, $u);
+if($normal) {
+	header('Cache-Control: max-age=3155760000');
+} else {
+	header('HTTP/1.1 503 Service Temporarily Unavailable');
+}
+header('X-Reduction-Steps: ' . (cl_distance($db, $t, $u) + 0));
+header('X-Normal: ' . ($normal ? '1' : '0'));
+echo cl_serialize($u);
 pg_close($db);
 ?>

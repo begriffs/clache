@@ -1,13 +1,13 @@
 <?php 
-function cl_fr($db, $t, $m, $d) {
-	if($d > $m || is_string($t) || cl_normal($db, $t)) {
+function cl_fr($db, $t, $d) {
+	if($d < 1 || is_string($t) || cl_normal($db, $t)) {
 		return $t;
 	}
 	/////////////////////////////////////////////////////
 	//// if t is not on the frontier, get out there! ////
 	$u = cl_current_fr($db, $t);
 	if($u) {
-		return cl_fr($db, $u, $m, $d);
+		return cl_fr($db, $u, $d - 1);
 	}
 	/////////////////////////////////////////////////////
 	////    check for reduction by basic rules       ////
@@ -27,28 +27,28 @@ function cl_fr($db, $t, $m, $d) {
 	////          if reduces by basic rules          ////
 	if($u) {
 		cl_memoize($db, $t, $u, 1);
-		return cl_fr($db, $u, $m, $d + 1);
+		return cl_fr($db, $u, $d - 1);
 	}
 
 	/////////////////////////////////////////////////////
 	////          leftmost, outermost first          ////
 	$l = $t['l'];
-	$l2 = cl_fr($db, $l, $m, $d + 1);
+	$l2 = cl_fr($db, $l, $d - 1);
 	$e = cl_distance($db, $l, $l2);
 	if($e > 0) {
 		$t2 = array('l' => $l2, 'r' => $t['r']);
 		cl_memoize($db, $t, $t2, $e);
-		return cl_fr($db, $t2, $m, $d + 1);
+		return cl_fr($db, $t2, $d - 1);
 	}
 	/////////////////////////////////////////////////////
 	////             then the other side             ////
 	$r = $t['r'];
-	$r2 = cl_fr($db, $r, $m, $d + 1);
+	$r2 = cl_fr($db, $r, $d - 1);
 	$e = cl_distance($db, $r, $r2);
 	if($e > 0) {
 		$t2 = array('l' => $l, 'r' => $r2);
 		cl_memoize($db, $t, $t2, $e);
-		return cl_fr($db, $t2, $m, $d + 1);
+		return cl_fr($db, $t2, $d - 1);
 	}
 	if(cl_normal($db, $l) && cl_normal($db, $r)) {
 		cl_mark_normal($db, $t);
@@ -67,7 +67,7 @@ function cl_init($db) {
 function cl_normal($db, $t) {
 	$r = pg_fetch_array(pg_execute($db, 'normal', array(cl_serialize($t))),
 	                    null, PGSQL_ASSOC);
-	return $r['proved_normal'] == 't';
+	return isset($r) ? $r['proved_normal'] == 't' : FALSE;
 }
 
 function cl_mark_normal($db, $t) {
