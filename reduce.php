@@ -7,7 +7,6 @@ function cl_fr($db, $t, $m, $d) {
 	//// if t is not on the frontier, get out there! ////
 	$u = cl_current_fr($db, $t);
 	if($u) {
-		echo "jump: " . cl_serialize($u) . "\n";
 		return cl_fr($db, $u, $m, $d);
 	}
 	/////////////////////////////////////////////////////
@@ -27,7 +26,6 @@ function cl_fr($db, $t, $m, $d) {
 	/////////////////////////////////////////////////////
 	////          if reduces by basic rules          ////
 	if($u) {
-		echo 'memo: ' . cl_serialize($t) . '  ####  ' . cl_serialize($u) . "\n";
 		cl_memoize($db, $t, $u, 1);
 		return cl_fr($db, $u, $m, $d + 1);
 	}
@@ -39,9 +37,8 @@ function cl_fr($db, $t, $m, $d) {
 	$e = cl_distance($db, $l, $l2);
 	if($e > 0) {
 		$t2 = array('l' => $l2, 'r' => $t['r']);
-		echo 'memo: ' . cl_serialize($t) . '  ####  ' . cl_serialize($t2) . "\n";
 		cl_memoize($db, $t, $t2, $e);
-		return cl_fr($db, $t2, $m, $d + $e);
+		return cl_fr($db, $t2, $m, $d + 1);
 	}
 	/////////////////////////////////////////////////////
 	////             then the other side             ////
@@ -50,12 +47,10 @@ function cl_fr($db, $t, $m, $d) {
 	$e = cl_distance($db, $r, $r2);
 	if($e > 0) {
 		$t2 = array('l' => $l, 'r' => $r2);
-		echo 'memo: ' . cl_serialize($t) . '  ####  ' . cl_serialize($t2) . "\n";
 		cl_memoize($db, $t, $t2, $e);
-		return cl_fr($db, $t2, $m, $d + $e);
+		return cl_fr($db, $t2, $m, $d + 1);
 	}
 	if(cl_normal($db, $l) && cl_normal($db, $r)) {
-		echo 'norm: ' . cl_serialize($t) . "\n";
 		cl_mark_normal($db, $t);
 	}
 	return $t;
