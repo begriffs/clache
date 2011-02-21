@@ -4,7 +4,7 @@ include('parse.php');
 include('reduce.php');
 header("Content-Type: text/plain");
 header("X-Powered-By: clache");
-$db = pg_connect("host=localhost port=5433 dbname=clweb user=postgres password=password")
+$db = pg_connect("host=localhost dbname=clweb user=postgres password=password")
     or die('Could not connect: ' . pg_last_error());
 cl_init($db);
 $t = cl_parse($_GET['cl']);
@@ -13,7 +13,7 @@ if(!$t) {
 ?>URL is not a well-formed combinatory logic term<?php
 	die();
 }
-$u = cl_fr($db, cl_parse($_GET['cl']), 1000);
+$u = cl_fr($db, cl_parse($_GET['cl']), 100);
 $normal = cl_normal($db, $u);
 if($normal) {
 	header('Cache-Control: max-age=3155760000');

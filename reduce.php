@@ -57,17 +57,17 @@ function cl_fr($db, $t, $d) {
 }
 
 function cl_init($db) {
-	pg_prepare($db, 'normal', 'SELECT proved_normal FROM term WHERE cl = $1');
+	pg_prepare($db, 'normal', 'SELECT normal FROM term WHERE cl = $1');
 	pg_prepare($db, 'memoize', 'SELECT memoize($1, $2, $3)');
-	pg_prepare($db, 'curfr', 'SELECT id_cl(reduct) AS reduct FROM f WHERE redex = cl_id($1)');
-	pg_prepare($db, 'dist', 'SELECT d FROM f WHERE redex = cl_id($1) AND reduct = cl_id($2)');
+	pg_prepare($db, 'curfr', 'SELECT b AS reduct FROM f WHERE a = $1');
+	pg_prepare($db, 'dist', 'SELECT d FROM f WHERE a = $1 AND b = $2');
 	pg_prepare($db, 'marknormal', 'SELECT mark_normal($1)');
 }
 
 function cl_normal($db, $t) {
 	$r = pg_fetch_array(pg_execute($db, 'normal', array(cl_serialize($t))),
 	                    null, PGSQL_ASSOC);
-	return isset($r) ? $r['proved_normal'] == 't' : FALSE;
+	return isset($r) ? $r['normal'] == 't' : FALSE;
 }
 
 function cl_mark_normal($db, $t) {
