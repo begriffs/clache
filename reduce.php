@@ -62,6 +62,7 @@ function cl_init($db) {
 	pg_prepare($db, 'curfr', 'SELECT b AS reduct FROM f WHERE a = $1');
 	pg_prepare($db, 'dist', 'SELECT d FROM f WHERE a = $1 AND b = $2');
 	pg_prepare($db, 'marknormal', 'SELECT mark_normal($1)');
+	pg_prepare($db, 'short', 'SELECT shortest($1)');
 }
 
 function cl_normal($db, $t) {
@@ -89,5 +90,11 @@ function cl_current_fr($db, $t) {
 	$r = pg_fetch_array(pg_execute($db, 'curfr', array(cl_serialize($t))),
 	                    null, PGSQL_ASSOC);
 	return $r ? cl_parse($r['reduct']) : FALSE;
+}
+
+function cl_shortest($db, $t) {
+	$r = pg_fetch_array(pg_execute($db, 'short', array(cl_serialize($t))),
+	                    null, PGSQL_ASSOC);
+	return $r ? cl_parse($r['shortest']) : FALSE;
 }
 ?>
