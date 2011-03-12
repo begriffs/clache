@@ -4,7 +4,7 @@
 
 -- Dumped from database version 9.0.3
 -- Dumped by pg_dump version 9.0.3
--- Started on 2011-02-28 11:20:51 CST
+-- Started on 2011-03-12 10:59:19 CST
 
 SET statement_timeout = 0;
 SET client_encoding = 'UTF8';
@@ -26,7 +26,7 @@ ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
 SET search_path = public, pg_catalog;
 
 --
--- TOC entry 20 (class 1255 OID 25386)
+-- TOC entry 18 (class 1255 OID 16428)
 -- Dependencies: 6 315
 -- Name: mark_normal(character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
@@ -47,8 +47,8 @@ $$;
 ALTER FUNCTION public.mark_normal(t character varying) OWNER TO postgres;
 
 --
--- TOC entry 18 (class 1255 OID 25469)
--- Dependencies: 315 6
+-- TOC entry 19 (class 1255 OID 16429)
+-- Dependencies: 6 315
 -- Name: memoize(character varying, character varying, integer); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -81,7 +81,7 @@ END;$$;
 ALTER FUNCTION public.memoize(x character varying, y character varying, n integer) OWNER TO postgres;
 
 --
--- TOC entry 19 (class 1255 OID 25388)
+-- TOC entry 20 (class 1255 OID 16430)
 -- Dependencies: 6
 -- Name: reset(); Type: FUNCTION; Schema: public; Owner: postgres
 --
@@ -99,8 +99,8 @@ $$;
 ALTER FUNCTION public.reset() OWNER TO postgres;
 
 --
--- TOC entry 21 (class 1255 OID 26154)
--- Dependencies: 6 315
+-- TOC entry 21 (class 1255 OID 16431)
+-- Dependencies: 315 6
 -- Name: shortest(character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -135,7 +135,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- TOC entry 1508 (class 1259 OID 25441)
+-- TOC entry 1507 (class 1259 OID 16432)
 -- Dependencies: 6
 -- Name: f; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
@@ -150,7 +150,7 @@ CREATE TABLE f (
 ALTER TABLE public.f OWNER TO postgres;
 
 --
--- TOC entry 1507 (class 1259 OID 25431)
+-- TOC entry 1508 (class 1259 OID 16438)
 -- Dependencies: 1786 6
 -- Name: term; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
@@ -164,8 +164,8 @@ CREATE TABLE term (
 ALTER TABLE public.term OWNER TO postgres;
 
 --
--- TOC entry 1798 (class 0 OID 25441)
--- Dependencies: 1508
+-- TOC entry 1793 (class 0 OID 16432)
+-- Dependencies: 1507
 -- Data for Name: f; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -174,8 +174,8 @@ COPY f (a, b, d) FROM stdin;
 
 
 --
--- TOC entry 1797 (class 0 OID 25431)
--- Dependencies: 1507
+-- TOC entry 1794 (class 0 OID 16438)
+-- Dependencies: 1508
 -- Data for Name: term; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -187,46 +187,35 @@ i	t
 
 
 --
--- TOC entry 1794 (class 2606 OID 25448)
--- Dependencies: 1508 1508 1508
--- Name: pkey_f; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY f
-    ADD CONSTRAINT pkey_f PRIMARY KEY (a, b);
-
-
---
--- TOC entry 1789 (class 2606 OID 25450)
--- Dependencies: 1507 1507
--- Name: pkey_term; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY term
-    ADD CONSTRAINT pkey_term PRIMARY KEY (cl);
-
-
---
--- TOC entry 1790 (class 1259 OID 25451)
--- Dependencies: 1508
+-- TOC entry 1787 (class 1259 OID 34021)
+-- Dependencies: 1507
 -- Name: idx_f_a; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
 --
 
-CREATE INDEX idx_f_a ON f USING btree (a);
+CREATE INDEX idx_f_a ON f USING hash (a);
 
 
 --
--- TOC entry 1791 (class 1259 OID 25452)
--- Dependencies: 1508
+-- TOC entry 1788 (class 1259 OID 34022)
+-- Dependencies: 1507
 -- Name: idx_f_b; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
 --
 
-CREATE INDEX idx_f_b ON f USING btree (b);
+CREATE INDEX idx_f_b ON f USING hash (b);
 
 
 --
--- TOC entry 1792 (class 1259 OID 26150)
--- Dependencies: 1508 1508
+-- TOC entry 1789 (class 1259 OID 34020)
+-- Dependencies: 1507 1507 1507
+-- Name: idx_f_unique; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE UNIQUE INDEX idx_f_unique ON f USING btree (md5(a), md5(b));
+
+
+--
+-- TOC entry 1790 (class 1259 OID 16451)
+-- Dependencies: 1507 1507
 -- Name: idx_shortest; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -236,36 +225,25 @@ ALTER TABLE f CLUSTER ON idx_shortest;
 
 
 --
--- TOC entry 1787 (class 1259 OID 25440)
--- Dependencies: 1507
+-- TOC entry 1791 (class 1259 OID 34023)
+-- Dependencies: 1508
 -- Name: idx_term_cl; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
 --
 
-CREATE INDEX idx_term_cl ON term USING btree (cl);
+CREATE INDEX idx_term_cl ON term USING hash (cl);
 
 
 --
--- TOC entry 1795 (class 2606 OID 25453)
--- Dependencies: 1507 1788 1508
--- Name: fkey_f_a; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- TOC entry 1792 (class 1259 OID 34024)
+-- Dependencies: 1508 1508
+-- Name: idx_term_unique; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
 --
 
-ALTER TABLE ONLY f
-    ADD CONSTRAINT fkey_f_a FOREIGN KEY (a) REFERENCES term(cl) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- TOC entry 1796 (class 2606 OID 25463)
--- Dependencies: 1508 1788 1507
--- Name: fkey_f_b; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY f
-    ADD CONSTRAINT fkey_f_b FOREIGN KEY (b) REFERENCES term(cl) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE UNIQUE INDEX idx_term_unique ON term USING btree (md5(cl));
 
 
 --
--- TOC entry 1803 (class 0 OID 0)
+-- TOC entry 1799 (class 0 OID 0)
 -- Dependencies: 6
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
@@ -276,7 +254,7 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
--- Completed on 2011-02-28 11:20:52 CST
+-- Completed on 2011-03-12 10:59:20 CST
 
 --
 -- PostgreSQL database dump complete
