@@ -1,6 +1,6 @@
 <?php 
 function cl_fr($db, $t, $d) {
-	if($d < 1 || is_string($t) || cl_normal($db, $t)) {
+	if($d < 1 || $t[0] != '`' || cl_normal($db, $t)) {
 		return $t;
 	}
 	/////////////////////////////////////////////////////
@@ -11,18 +11,20 @@ function cl_fr($db, $t, $d) {
 	}
 	/////////////////////////////////////////////////////
 	////    check for reduction by basic rules       ////
-	if($t['l'] == 'i') {
-		$u = $t['r'];
-	} else if(!is_string($t['l']) && $t['l']['l'] == 'k') {
-		$u = $t['l']['r'];
-	} else if(!is_string($t['l']) &&
-	          !is_string($t['l']['l']) &&
-	          $t['l']['l']['l'] == 's') {
-		$u = array(
-			'l' => array('l' => $t['l']['l']['r'], 'r' => $t['r']),
-			'r' => array('l' => $t['l']['r'],      'r' => $t['r'])
-		);
+	if(strncmp($t, '`i', 2) === 0) {
+		$u = substr($t, 2);
+	} else if(strncmp($t, '``k', 3) === 0) {
+		$u = substr($t, 3, cl_eot($t, 3));
+	} else if(strncmp($t, '```s', 4) === 0) {
+		$len_x = cl_eot($t, 4);
+		$len_y = cl_eot($t, 4+$len_x);
+		$len_z = cl_eot($t, 4+$len_x+$len_y);
+		$x     = substr($t, 4, $len_x);
+		$y     = substr($t, 4+$len_x, $len_y);
+		$z     = substr($t, 4+$len_x+$len_y, $len_z);
+		$u = "``$x$z`$y$z";
 	}
+
 	/////////////////////////////////////////////////////
 	////          if reduces by basic rules          ////
 	if($u) {
@@ -30,23 +32,24 @@ function cl_fr($db, $t, $d) {
 		return cl_fr($db, $u, $d - 1);
 	}
 
+	$split = cl_eot($t, 1);
+	$l = substr($t, 1, $split);
+	$r = substr($t, $split+1);
 	/////////////////////////////////////////////////////
 	////          leftmost, outermost first          ////
-	$l = $t['l'];
 	$l2 = cl_fr($db, $l, $d - 1);
 	$e = cl_distance($db, $l, $l2);
 	if($e > 0) {
-		$t2 = array('l' => $l2, 'r' => $t['r']);
+		$t2 = "`$l2$r";
 		cl_memoize($db, $t, $t2, $e);
 		return cl_fr($db, $t2, $d - 1);
 	}
 	/////////////////////////////////////////////////////
 	////             then the other side             ////
-	$r = $t['r'];
 	$r2 = cl_fr($db, $r, $d - 1);
 	$e = cl_distance($db, $r, $r2);
 	if($e > 0) {
-		$t2 = array('l' => $l, 'r' => $r2);
+		$t2 = "`$l$r2";
 		cl_memoize($db, $t, $t2, $e);
 		return cl_fr($db, $t2, $d - 1);
 	}
@@ -54,6 +57,17 @@ function cl_fr($db, $t, $d) {
 		cl_mark_normal($db, $t);
 	}
 	return $t;
+}
+
+
+function cl_eot($t, $offset) {
+	$balance = 1;
+	$length = 0;
+	do {
+		$balance += ($t[$offset+$length] == '`' ? 1 : -1);
+		$length++;
+	} while($balance > 0);
+	return $length;
 }
 
 function cl_init($db) {
@@ -66,35 +80,35 @@ function cl_init($db) {
 }
 
 function cl_normal($db, $t) {
-	$r = pg_fetch_array(pg_execute($db, 'normal', array(cl_serialize($t))),
+	$r = pg_fetch_array(pg_execute($db, 'normal', array($t)),
 	                    null, PGSQL_ASSOC);
 	return isset($r) ? $r['normal'] == 't' : FALSE;
 }
 
 function cl_mark_normal($db, $t) {
-	pg_execute($db, 'marknormal', array(cl_serialize($t)));
+	pg_execute($db, 'marknormal', array($t));
 }
 
 function cl_memoize($db, $a, $b, $d) {
-	pg_execute($db, 'memoize', array(cl_serialize($a), cl_serialize($b), $d));
+	pg_execute($db, 'memoize', array($a, $b, $d));
 }
 
 function cl_distance($db, $a, $b) {
 	$r = pg_fetch_array(
-		pg_execute($db, 'dist', array(cl_serialize($a), cl_serialize($b))),
+		pg_execute($db, 'dist', array($a, $b)),
 		null, PGSQL_ASSOC);
 	return $r['d'];
 }
 
 function cl_current_fr($db, $t) {
-	$r = pg_fetch_array(pg_execute($db, 'curfr', array(cl_serialize($t))),
+	$r = pg_fetch_array(pg_execute($db, 'curfr', array($t)),
 	                    null, PGSQL_ASSOC);
-	return $r ? cl_parse($r['reduct']) : FALSE;
+	return $r ? $r['reduct'] : FALSE;
 }
 
 function cl_shortest($db, $t) {
-	$r = pg_fetch_array(pg_execute($db, 'short', array(cl_serialize($t))),
+	$r = pg_fetch_array(pg_execute($db, 'short', array($t)),
 	                    null, PGSQL_ASSOC);
-	return $r ? cl_parse($r['shortest']) : FALSE;
+	return $r ? $r['shortest'] : FALSE;
 }
 ?>
