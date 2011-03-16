@@ -9,32 +9,6 @@ function cl_fr($db, $t, $d) {
 	if($u) {
 		return cl_fr($db, $u, $d - 1);
 	}
-
-	/////////////////////////////////////////////////////
-	////    if left or right child are known to reduce //
-	////    to normal form, replace them with it       //
-	$split = cl_eot($t, 1);
-	$l = substr($t, 1, $split);
-	$r = substr($t, $split+1);
-	$l2 = cl_current_fr($db, $l);
-	$r2 = cl_current_fr($db, $r);
-	$dl = ($l2 ? cl_distance($db, $l, $l2) : 0);
-	$dr = ($r2 ? cl_distance($db, $r, $r2) : 0);
-	$eager = FALSE;
-	if($dl > 0 && cl_normal($db, $l2)) {
-		$eager = TRUE;
-		$l = $l2;
-	}
-	if($dr > 0 && cl_normal($db, $r2)) {
-		$eager = TRUE;
-		$r = $r2;
-	}
-	if($eager) {
-		$t2 = "`$l$r";
-		cl_memoize($db, $t, $t2, $dl+$dr);
-		$t = $t2;
-	}
-
 	/////////////////////////////////////////////////////
 	////    check for reduction by basic rules       ////
 	if(strncmp($t, '`i', 2) === 0) {
