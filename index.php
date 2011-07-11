@@ -14,7 +14,7 @@ if(cl_eot($t, 0) != strlen($t)) {
 ?>URL is not a well-formed combinatory logic term<?php
 	die();
 }
-$u = cl_fr($db, $t, 20);
+$u = cl_fr($db, $t, 5000, 1048576);
 $normal = cl_normal($db, $u);
 header('X-Reductions: ' . (cl_distance($db, $t, $u) + 0));
 header('X-Normal: ' . ($normal ? '1' : '0'));

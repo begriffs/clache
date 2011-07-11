@@ -1,13 +1,14 @@
 <?php 
-function cl_fr($db, $t, $d) {
-	if($d < 1 || $t[0] != '`' || cl_normal($db, $t)) {
+function cl_fr($db, $t, $tether, $maxsz) {
+	if($tether < 1 || $t[0] != '`' || strlen($t) > $maxsz || cl_normal($db, $t)) {
 		return $t;
 	}
 	/////////////////////////////////////////////////////
 	//// if t is not on the frontier, get out there! ////
 	$u = cl_current_fr($db, $t);
 	if($u) {
-		return cl_fr($db, $u, $d - 1);
+    $e = cl_distance($db, $t, $u);
+    return cl_fr($db, $u, $tether - $e, $maxsz);
 	}
 	/////////////////////////////////////////////////////
 	////    check for reduction by basic rules       ////
@@ -29,7 +30,7 @@ function cl_fr($db, $t, $d) {
 	////          if reduces by basic rules          ////
 	if($u) {
 		cl_memoize($db, $t, $u, 1);
-		return cl_fr($db, $u, $d - 1);
+		return cl_fr($db, $u, $tether - 1, $maxsz);
 	}
 
 	$split = cl_eot($t, 1);
@@ -37,21 +38,21 @@ function cl_fr($db, $t, $d) {
 	$r = substr($t, $split+1);
 	/////////////////////////////////////////////////////
 	////          leftmost, outermost first          ////
-	$l2 = cl_fr($db, $l, $d - 1);
+	$l2 = cl_fr($db, $l, $tether, $maxsz);
 	$e = cl_distance($db, $l, $l2);
 	if($e > 0) {
 		$t2 = "`$l2$r";
 		cl_memoize($db, $t, $t2, $e);
-		return cl_fr($db, $t2, $d - 1);
+		return cl_fr($db, $t2, $tether - $e, $maxsz);
 	}
 	/////////////////////////////////////////////////////
 	////             then the other side             ////
-	$r2 = cl_fr($db, $r, $d - 1);
+	$r2 = cl_fr($db, $r, $tether, $maxsz);
 	$e = cl_distance($db, $r, $r2);
 	if($e > 0) {
 		$t2 = "`$l$r2";
 		cl_memoize($db, $t, $t2, $e);
-		return cl_fr($db, $t2, $d - 1);
+		return cl_fr($db, $t2, $tether - $e, $maxsz);
 	}
 	if(cl_normal($db, $l) && cl_normal($db, $r)) {
 		cl_mark_normal($db, $t);
