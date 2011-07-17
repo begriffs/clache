@@ -1,47 +1,36 @@
 ## Overview
 
-Clache reduces combinatory logic terms and memoizes every step of
-past reductions in a database. It reduces the terms either to normal
-form, or to an arbitrary limit of work. In this way it records a
-local "frontier" of computable knowledge. Conversely, clache can
-losslessly and quickly compress a term by finding the shortest term
-that reduces to the same place on the frontier as the original.
+Clache runs [Lazy K](http://homepages.cwi.nl/~tromp/cl/lazy-k.html)
+programs in the cloud. It memoizes every step of past reductions so
+the more programs it runs, the faster it goes.
 
-After perfecting the current version, I will investigate linking
-Clache servers together into a P2P network for sharing frontiers.
-A large network can act as a supercomputer for purely functional
-programs. Read the Wiki to learn how to compile Scheme programs and
-run them in Clache.
+Consider it a kind of massively parallel virtual machine whose
+bytecode is Lazy K.
 
-Runs on PHP and PostgreSQL.
-
-## Usage
+## How to use
 
 Point your web browser to
-http://your-clache-server/?cl=combinatory-logic-term
 
-Terms are written in the syntax of
-[Unlambda](http://www.madore.org/~david/programs/unlambda) but are
-restricted to the combinators S, K, and I.
+    http://clache.begriffsschrift.com/(lazy k program)
 
-The server will respond with the reduced term in plain text and
-will provide reduction information in the HTTP headers.
+Where the [Lazy K](http://homepages.cwi.nl/~tromp/cl/lazy-k.html)
+program is written in
+[Unlambda](http://www.madore.org/~david/programs/unlambda/) syntax.
+The web server will run the program and give you either the result,
+in plain text, or a blank page if you exceeded the computation
+limit.
 
- *header*    | *value*
------------- | --------------------------------------
-X-Normal     | 1 if result is in normal form, else 0
-X-Reductions | number of times reduced
+## How to run real programs
 
-On a successful reduction to normal form, the server issues an HTTP
-200 result with long expiration Cache-Control, otherwise a 503 code.
+Writing anything meaningful in Lazy K is hard. It is easier to write
+purely functional programs in a language like Scheme and compile
+that program into Lazy K. Clache does not support any form of runtime
+output or side effects. A program's result must be contained in its
+normal form.
 
-## Installation
-
-+ You will need a web server running [PHP](http://www.php.net/) 5.3
-and [PostgreSQL](http://www.postgresql.org) 9.
-+ Copy the clache source files to your web root.
-+ Run `clweb.sql` in your database to create the necessary tables
-and functions.
-+ Change the database login credentials at the top of `index.php`
-to match your own configuration.
+This distribution contains an adaptation of a Scheme compiler and
+programming framework written by [Ben
+Rudiak-Gould](http://neuron2.net/www.math.berkeley.edu/benrg/index.html)
+for the [2002 Esoteric Awards
+competition](http://esoteric.voxelperfect.net/wiki/Essies#2002).
 
