@@ -8,22 +8,30 @@ import urllib2
 
 class F(db.Model):
   """Computable frontier"""
-  a = db.StringProperty(required=True)
-  b = db.StringProperty(required=True)
+  a = db.TextProperty(required=True)
+  b = db.TextProperty(required=True)
+  hash = db.IntegerProperty(required=True)
 
 class Term(db.Model):
   """Normal terms"""
-  cl = db.StringProperty(required=True)
+  cl = db.TextProperty(required=True)
+  hash = db.IntegerProperty(required=True)
 
 class MainHandler(webapp.RequestHandler):
   def get(self):
-    self.response.headers['Content-Type'] = 'text/plain'
     t = urllib2.unquote(self.request.path[1:])
-    try:
-      self.response.out.write(self.fr(t, 300))
-    except ValueException:
-      self.error(400) # bad request
+    self.handle(t)
 
+  def post(self):
+    t = urllib2.unquote(self.request.get('term'))
+    self.handle(t)
+
+  def handle(self, t):
+    self.response.headers['Content-Type'] = 'text/plain'
+    try:
+      self.response.out.write(self.fr(t))
+    except:
+      self.error(400) # bad request
 
   def cached(self, a):
     b = memcache.get(a)
@@ -42,7 +50,7 @@ class MainHandler(webapp.RequestHandler):
     max     = len(t)
     while True:
       if offset+length >= max:
-        raise ValueException
+        raise BadArgumentError(t)
       balance += (1 if (t[offset+length] == '`') else -1)
       length += 1
       if balance <= 0:
@@ -53,31 +61,31 @@ class MainHandler(webapp.RequestHandler):
   def normal(self, t):
     if t[0] != '`':
       return True
-    q = Term.all(keys_only = True).filter('cl =', t)
-    return q.count(1) > 0
+    rs = Term.all().filter('hash =', hash(t)).fetch(10)
+    for r in rs:
+      if t == r.cl:
+        return True
+    return False
 
 
   def mark_normal(self, t):
-    Term(cl = t).put()
+    Term(cl = t, hash = hash(t)).put()
 
 
   def current_fr(self, t):
-    rs = F.all().filter('a =', t).fetch(1)
+    rs = F.all().filter('hash =', hash(t)).fetch(10)
     for r in rs:
-      return r.b
+      if t == r.a:
+        return r.b
     return None
 
 
   def memoize(self, a, b):
     memcache.add(a, b)
-    F(a = a, b = b).put()
+    F(a = a, b = b, hash = hash(a)).put()
 
 
-  def fr(self, t, d):
-    # if depth limit reached
-    if d < 1:
-      return None
-
+  def fr(self, t):
     # if t is cached, we're done
     u = self.cached(t)
     if u is not None:
@@ -99,7 +107,7 @@ class MainHandler(webapp.RequestHandler):
 
     # if it reduced a step then keep it going and memoize
     if u is not None:
-      v = self.fr(u, d - 1)
+      v = self.fr(u)
       if v is not None:
         self.memoize(t, v)
       return v
@@ -114,19 +122,19 @@ class MainHandler(webapp.RequestHandler):
     r = t[1+split:]
 
     # leftmost, outermost first
-    l2 = self.fr(l, d - 1)
+    l2 = self.fr(l)
     if l != l2:
       t2 = "`%s%s" % (l2, r)
-      v = self.fr(t2, d - 1)
+      v = self.fr(t2)
       if v is not None:
         self.memoize(t, v)
       return v
 
     # then the other side
-    r2 = self.fr(r, d - 1)
+    r2 = self.fr(r)
     if r != r2:
       t2 = "`%s%s" % (l, r2)
-      v = self.fr(t2, d - 1)
+      v = self.fr(t2)
       if v is not None:
         self.memoize(t, v)
       return v
