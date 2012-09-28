@@ -6,6 +6,8 @@ gem 'rails', '3.2.8'
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
 gem 'pg'
+gem 'delayed_job_active_record'
+gem 'foreman'
 
 
 # Gems used only for assets and not required
