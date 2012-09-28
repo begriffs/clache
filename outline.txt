@@ -1,0 +1,18 @@
+Web server
+
+GET /reduce/:term
+  if term in reductions
+    if pending, return 202 (accepted)
+    if succeeded, return 200 and result
+    if failed, return 413 (too large)
+  else
+    if not valid, return 400 (bad request)
+    create reduction with term, mark as pending
+    start worker with beanstalk
+    return 202
+
+Worker
+
+Run :reduction_id
+  Load term
+  Mimic logic for Memcache::Term#fully_reduce
