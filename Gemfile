@@ -8,6 +8,8 @@ gem 'rails', '3.2.8'
 gem 'pg'
 gem 'delayed_job_active_record'
 gem 'foreman'
+gem 'enumerated_attribute'
+gem 'foreigner'
 
 
 # Gems used only for assets and not required

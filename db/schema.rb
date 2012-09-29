@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120928174232) do
+ActiveRecord::Schema.define(:version => 20120929151252) do
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -28,5 +28,17 @@ ActiveRecord::Schema.define(:version => 20120928174232) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
+
+  create_table "terms", :force => true do |t|
+    t.text     "serialized"
+    t.string   "reduction_status"
+    t.integer  "redux_id"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+  end
+
+  add_index "terms", ["serialized"], :name => "index_terms_on_serialized"
+
+  add_foreign_key "terms", "terms", :name => "terms_redux_id_fk", :column => "redux_id"
 
 end
