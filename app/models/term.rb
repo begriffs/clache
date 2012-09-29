@@ -22,12 +22,11 @@ class Term < ActiveRecord::Base
     save
 
     cur     = MasterForest::Term.new serialized
-    redices = [cur]
+    redices = []
     1.upto(maximum_reduction_depth) do
       known_term = Term.find_by_serialized cur.to_s
-      if known_term and known_term.redux.present?
-        memoize redices, :success, known_term.redux
-        return
+      if known_term and known_term.reduction_status != :pending
+        return memoize redices, known_term.reduction_status, known_term.redux
       end
 
       reduced = cur.reduce
@@ -36,39 +35,42 @@ class Term < ActiveRecord::Base
       end
       if reduced.normal?
         t = Term.find_or_create_by_serialized reduced.to_s
-        memoize redices, :success, t
-        return
+        return memoize redices, :success, t
       else
         redices << reduced
       end
       cur = reduced
     end
 
-    self.reduction_status = :reduction_too_deep
-    save
+    memoize redices, :reduction_too_deep, nil
   end
-  #handle_asynchronously :reduce
+
+  handle_asynchronously :reduce
 
   private
+
   def syntactically_valid
     unless (MasterForest::Term.new serialized).valid?
-      errors.add(:serialized, "is not syntactically correct")
+      errors.add :serialized, "is not syntactically correct"
     end
   end
 
   def successful_reduction_has_redux
     if reduction_status == :success and redux.nil?
-      errors.add(:reduction_status, "cannot be successful since redux is nil")
+      errors.add :reduction_status, "cannot be successful since redux is nil"
     end
   end
 
   def memoize redices, status, redux
     redices.each do |redex|
-      t                  = Term.find_or_create_by_serialized redex.to_s
+      t                  = Term.create serialized: redex.to_s
       t.redux            = redux
       t.reduction_status = status
       t.save
     end
+    self.redux            = redux
+    self.reduction_status = status
+    self.save
   end
 
 end
