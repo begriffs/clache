@@ -1,8 +1,11 @@
+require 'master_forest'
+
 class Term < ActiveRecord::Base
   attr_accessible :reduction_status, :serialized
-  enum_attr :reduction_status, %w(^not_started pending complete term_too_large reduction_too_deep)
+  enum_attr :reduction_status, %w(^not_started pending success term_too_large reduction_too_deep)
   validates :serialized, presence: true
   validate :syntactically_valid
+  validate :successful_reduction_has_redux
 
   has_one :redux, class_name: "Term", foreign_key: "redux_id"
 
@@ -15,7 +18,7 @@ class Term < ActiveRecord::Base
   end
 
   def reduce
-    reduction_status = :pending
+    self.reduction_status = :pending
     save
 
     cur     = MasterForest::Term.new serialized
@@ -41,10 +44,10 @@ class Term < ActiveRecord::Base
       cur = reduced
     end
 
-    reduction_status = :reduction_too_deep
+    self.reduction_status = :reduction_too_deep
     save
   end
-  handle_asynchronously :reduce
+  #handle_asynchronously :reduce
 
   private
   def syntactically_valid
@@ -53,9 +56,15 @@ class Term < ActiveRecord::Base
     end
   end
 
+  def successful_reduction_has_redux
+    if reduction_status == :success and redux.nil?
+      errors.add(:reduction_status, "cannot be successful since redux is nil")
+    end
+  end
+
   def memoize redices, status, redux
-    redices.each do |serialized_redex|
-      t                  = Term.find_or_create_by_serialized serialized_redex
+    redices.each do |redex|
+      t                  = Term.find_or_create_by_serialized redex.to_s
       t.redux            = redux
       t.reduction_status = status
       t.save
