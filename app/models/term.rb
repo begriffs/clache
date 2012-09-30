@@ -2,7 +2,8 @@ require 'master_forest'
 
 class Term < ActiveRecord::Base
   attr_accessible :reduction_status, :serialized
-  enum_attr :reduction_status, %w(^not_started pending success term_too_large reduction_too_deep)
+  enum_attr :reduction_status,
+    %w(^not_started pending success term_too_large reduction_too_deep normal_form)
   validates :serialized, presence: true
   validate :syntactically_valid
   validate :successful_reduction_has_redux
@@ -35,6 +36,8 @@ class Term < ActiveRecord::Base
       end
       if reduced.normal?
         t = Term.find_or_create_by_serialized reduced.to_s
+        t.reduction_status = :normal_form
+        t.save
         return memoize redices, :success, t
       else
         redices << reduced

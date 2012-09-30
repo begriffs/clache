@@ -1,0 +1,7 @@
+<h1>Create a combinatory logic term</h1>
+
+<%= form_for @term do |t| %>
+  <%= t.label :serialized, 'Lazy-K representation' %>:<br />
+  <%= t.text_field :serialized %><br />
+  <%= t.submit %>
+<% end %>

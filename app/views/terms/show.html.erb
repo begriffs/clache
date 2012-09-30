@@ -1,0 +1,20 @@
+<article><%= @term.serialized %></article>
+<dl>
+  <dt>Reduces to</dt>
+  <dd>
+<% case @term.reduction_status
+   when :not_started %>
+   Calculation queued. <a href="#">Refresh</a>
+<% when :pending %>
+   Calculation in progress. <a href="#">Refresh</a>
+<% when :term_too_large %>
+   Reduction term size limit (<%= @term.maximum_term_length %>) exceeded
+<% when :reduction_too_deep %>
+   Reduction step limit (<%= @term.maximum_reduction_depth %>) exceeded
+<% when :success %>
+   <a rel="reduced" href="<%= term_path(@term.redux) %>"><%= truncate @term.redux.serialized, length: 100 %></a>
+<% when :normal_form %>
+   In normal form.
+<% end %>
+  </dd>
+</dl>
