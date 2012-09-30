@@ -14,6 +14,8 @@ class TermsController < ApplicationController
   end
 
   def index
+    @q = Term.search params[:q]
+    @terms = @q.result.paginate page: params[:page]
   end
 
   def show

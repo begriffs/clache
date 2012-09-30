@@ -13,6 +13,8 @@ gem 'enumerated_attribute'
 gem 'foreigner'
 
 gem 'master_forest'
+gem 'ransack'
+gem 'will_paginate'
 
 group :production do
   gem 'hirefireapp'

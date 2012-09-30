@@ -1,2 +1,28 @@
-<h1>Terms#index</h1>
-<p>Find me in app/views/terms/index.html.erb</p>
+<h2>Find terms</h2>
+<%= search_form_for @q do |f| %>
+  <%= f.label :serialized_start %>
+  <%= f.text_field :serialized_start %><br />
+  <%= f.label :reduction_status_eq %>
+  <%= f.enum_select :reduction_status %>
+  <%= f.submit %>
+<% end %>
+
+<p>Sort by <%= sort_link @q, :created_at %> | <%= sort_link @q, :reduction_status %> | 
+<%= sort_link @q, :serialized %></p>
+
+<%= will_paginate @terms %>
+
+<table>
+  <thead>
+    <tr><th>Created</th><th>Status</th><th>Starts with</th></tr>
+  </thead>
+  <tbody>
+<% @terms.each do |t| %>
+  <tr>
+    <td><%= l t.created_at, :format => :short %></td>
+    <td><%= t.reduction_status %></td>
+    <td><a href="<%= term_path t %>"><%= truncate t.serialized, length: 150 %></a></td>
+  </tr>
+<% end %>
+  </tbody>
+</table>
