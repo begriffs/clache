@@ -55,6 +55,7 @@ GEM
     foreman (0.60.0)
       thor (>= 0.13.6)
     hike (1.2.1)
+    hirefireapp (0.0.8)
     i18n (0.6.1)
     journey (1.0.4)
     json (1.7.5)
@@ -127,6 +128,7 @@ DEPENDENCIES
   enumerated_attribute
   foreigner
   foreman
+  hirefireapp
   master_forest
   newrelic_rpm
   pg
