@@ -11,11 +11,11 @@ class Term < ActiveRecord::Base
   has_one :redux, class_name: "Term", foreign_key: "redux_id"
 
   def maximum_reduction_depth
-    10000
+    ENV['CLACHE_MAX_REDUCTION_DEPTH'] || 5000
   end
 
   def maximum_term_length
-    2**20
+    ENV['CLACHE_MAX_TERM_LENGTH'] || 2**16
   end
 
   def reduce
