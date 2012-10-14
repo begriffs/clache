@@ -1,4 +1,8 @@
 class TermsController < ApplicationController
+  caches_action :index
+  caches_action :show
+  cache_sweeper :term_sweeper
+
   def new
     @term = Term.new
   end
